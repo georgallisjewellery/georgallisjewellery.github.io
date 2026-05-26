@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Georgallis Jewellery | Rhodes Old Town, Greece | Est. 1965</title>
+<meta name="description" content="Handcrafted jewellery, wedding rings, watches and gifts in Rhodes Old Town since 1965. Three generations of Greek goldsmithing tradition.">
+<!-- Leaflet.js — Δωρεάν χάρτης OpenStreetMap, χωρίς API key, χωρίς λογαριασμό -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cinzel:wght@400;500;600&family=Cormorant:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold-light:#E8D080;--gold-dim:#9A7A2E;
+  --black:#080808;--black-soft:#0E0E0E;--black-card:#141414;
+  --white:#F8F3EC;--white-dim:#D8D2CA;--gray:#7A7870;
+  --transition: cubic-bezier(0.4, 0, 0.2, 1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:'Cormorant Garamond',serif;font-weight:300;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
+
+/* ── LANG SWITCHER ── */
+.lang-switcher{display:flex;align-items:center;gap:0;border:1px solid rgba(201,168,76,.2);overflow:hidden}
+.lang-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;background:none;border:none;cursor:pointer;padding:7px 14px;transition:all .3s var(--transition);color:var(--gray);text-transform:uppercase}
+.lang-btn.active{color:var(--black);background:var(--gold)}
+.lang-btn:not(.active):hover{color:var(--gold)}
+.lang-divider{width:1px;height:20px;background:rgba(201,168,76,.2);flex-shrink:0}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:22px 64px;background:linear-gradient(to bottom,rgba(8,8,8,.98) 0%,rgba(8,8,8,.0) 100%);transition:all .5s var(--transition);gap:24px}
+nav.scrolled{background:rgba(8,8,8,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,168,76,.1);padding:16px 64px}
+.nav-logo{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.4em;color:var(--gold);text-decoration:none;text-transform:uppercase;white-space:nowrap;transition:opacity .3s}
+.nav-logo:hover{opacity:.8}
+.nav-links{display:flex;gap:36px;list-style:none;flex:1;justify-content:center}
+.nav-links a{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:var(--gray);text-decoration:none;text-transform:uppercase;transition:color .3s var(--transition);position:relative;white-space:nowrap;padding-bottom:2px}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:1px;background:var(--gold);transition:all .4s var(--transition);transform:translateX(-50%)}
+.nav-links a:hover{color:var(--gold)}
+.nav-links a:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:20px}
+.nav-social{display:flex;gap:16px;align-items:center}
+.nav-social a{color:var(--gray);text-decoration:none;font-size:9px;letter-spacing:.2em;font-family:'Cinzel',serif;transition:color .3s;white-space:nowrap;text-transform:uppercase}
+.nav-social a:hover{color:var(--gold)}
+
+/* ── HAMBURGER ── */
+.hamburger{display:none;flex-direction:column;gap:6px;cursor:pointer;background:none;border:none;padding:4px}
+.hamburger span{display:block;width:22px;height:1px;background:var(--gold);transition:all .3s}
+.mobile-menu{display:none;position:fixed;inset:0;background:rgba(8,8,8,.99);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.35em;color:var(--white-dim);text-decoration:none;text-transform:uppercase;transition:color .3s}
+.mobile-menu a:hover{color:var(--gold)}
+.mobile-close{position:absolute;top:24px;right:28px;font-size:26px;color:var(--gold);cursor:pointer;background:none;border:none;line-height:1}
+.mobile-lang{display:flex;gap:0;margin-top:16px;border:1px solid rgba(201,168,76,.2)}
+.mobile-lang button{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;background:none;border:none;color:var(--gray);padding:10px 24px;cursor:pointer;transition:all .3s;text-transform:uppercase}
+.mobile-lang button.active{color:var(--black);background:var(--gold)}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;text-align:center;padding:120px 40px 80px}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 90% 70% at 50% 35%,rgba(201,168,76,.055) 0%,transparent 65%),radial-gradient(ellipse 50% 50% at 15% 85%,rgba(201,168,76,.03) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 85% 15%,rgba(201,168,76,.025) 0%,transparent 60%)}
+.hero-lines{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hero-lines::before{content:'';position:absolute;top:0;left:50%;width:1px;height:100%;background:linear-gradient(to bottom,rgba(201,168,76,.15),transparent 40%,transparent 60%,rgba(201,168,76,.08))}
+.hero-ornament{width:1px;height:100px;background:linear-gradient(to bottom,transparent,var(--gold) 50%,transparent);margin:0 auto 48px;animation:fadeInDown 1.4s var(--transition) forwards;opacity:0}
+.hero-logo-img{width:210px;height:210px;object-fit:contain;margin-bottom:24px;animation:fadeIn 1.8s ease .4s forwards;opacity:0;filter:drop-shadow(0 0 60px rgba(201,168,76,.25))}
+.hero-tagline{font-family:'Cormorant',serif;font-style:italic;font-weight:300;font-size:clamp(12px,1.8vw,16px);letter-spacing:.55em;color:var(--gold);text-transform:uppercase;margin-bottom:20px;animation:fadeIn 1.5s ease .7s forwards;opacity:0}
+.hero-title{font-family:'Cinzel',serif;font-size:clamp(32px,6.5vw,84px);font-weight:400;letter-spacing:.15em;line-height:1.05;color:var(--white);margin-bottom:14px;animation:fadeIn 1.5s ease 1s forwards;opacity:0}
+.hero-title span{color:var(--gold)}
+.hero-sub{font-family:'Cinzel',serif;font-size:clamp(8px,1.2vw,11px);letter-spacing:.6em;color:var(--gray);text-transform:uppercase;margin-bottom:52px;animation:fadeIn 1.5s ease 1.2s forwards;opacity:0}
+.hero-divider{display:flex;align-items:center;gap:20px;margin-bottom:52px;animation:fadeIn 1.5s ease 1.4s forwards;opacity:0}
+.hero-divider::before,.hero-divider::after{content:'';width:100px;height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,.6))}
+.hero-divider::after{background:linear-gradient(to left,transparent,rgba(201,168,76,.6))}
+.hero-divider span{color:var(--gold);font-size:14px;opacity:.8}
+.hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation:fadeIn 1.5s ease 1.6s forwards;opacity:0}
+.btn-primary{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;text-transform:uppercase;color:var(--black);background:var(--gold);border:1px solid var(--gold);padding:18px 42px;cursor:pointer;text-decoration:none;transition:all .4s var(--transition);display:inline-block;position:relative;overflow:hidden}
+.btn-primary::before{content:'';position:absolute;inset:0;background:var(--gold-light);transform:translateX(-101%);transition:transform .4s var(--transition)}
+.btn-primary:hover::before{transform:translateX(0)}
+.btn-primary:hover{box-shadow:0 12px 40px rgba(201,168,76,.25);transform:translateY(-3px)}
+.btn-primary span{position:relative;z-index:1}
+.btn-outline{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid rgba(201,168,76,.4);padding:18px 42px;cursor:pointer;text-decoration:none;transition:all .4s var(--transition);display:inline-block}
+.btn-outline:hover{border-color:var(--gold);background:rgba(201,168,76,.06);transform:translateY(-3px)}
+.scroll-indicator{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;animation:fadeIn 2s ease 2.2s forwards,bounce 2.5s ease 3s infinite;opacity:0}
+.scroll-indicator span{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5em;color:var(--gray);text-transform:uppercase}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,var(--gold),transparent)}
+
+/* ── SECTIONS ── */
+section{padding:110px 64px}
+.section-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.6em;color:var(--gold);text-transform:uppercase;margin-bottom:18px;display:block}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,5vw,56px);font-weight:300;line-height:1.08;color:var(--white);margin-bottom:24px}
+.section-title em{font-style:italic;color:var(--gold-light)}
+.gold-line{width:48px;height:1px;background:linear-gradient(to right,var(--gold),transparent);margin-bottom:40px}
+
+/* ── ABOUT ── */
+#about{background:var(--black-soft);position:relative;overflow:hidden}
+#about::before{content:'1965';position:absolute;right:-40px;top:50%;transform:translateY(-50%);font-family:'Cinzel',serif;font-size:260px;color:rgba(201,168,76,.025);pointer-events:none;line-height:1;letter-spacing:-.06em}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:90px;align-items:center;max-width:1200px;margin:0 auto}
+.about-text p{font-size:clamp(15px,1.7vw,18px);line-height:2;color:var(--white-dim);margin-bottom:20px;font-weight:300}
+.about-text p strong{color:var(--gold-light);font-weight:400}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:44px;padding-top:44px;border-top:1px solid rgba(201,168,76,.1)}
+.stat{padding-left:20px;border-left:1px solid rgba(201,168,76,.25)}
+.stat-number{font-family:'Cinzel',serif;font-size:30px;color:var(--gold);display:block;line-height:1;margin-bottom:8px;letter-spacing:.05em}
+.stat-label{font-size:12px;color:var(--gray);letter-spacing:.12em;text-transform:uppercase;font-family:'Cinzel',serif}
+.about-image{position:relative}
+.about-image::before{content:'';position:absolute;top:-24px;left:-24px;right:24px;bottom:24px;border:1px solid rgba(201,168,76,.15);pointer-events:none;z-index:0;transition:all .4s}
+.about-image:hover::before{border-color:rgba(201,168,76,.3)}
+.about-image img{width:100%;height:520px;object-fit:cover;object-position:center top;display:block;position:relative;z-index:1;filter:sepia(20%) contrast(1.08) brightness(.95)}
+.about-image-caption{position:absolute;bottom:-1px;left:0;right:0;background:linear-gradient(to top,rgba(8,8,8,.97),transparent);padding:48px 28px 22px;z-index:2;font-family:'Cormorant',serif;font-style:italic;font-size:14px;color:rgba(226,201,126,.8);letter-spacing:.08em}
+
+/* ── COLLECTIONS ── */
+#collections{background:var(--black);text-align:center}
+.collections-header{max-width:640px;margin:0 auto 72px}
+.collections-header .gold-line{margin:0 auto 40px}
+.collections-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:1px;max-width:1200px;margin:0 auto;background:rgba(201,168,76,.06)}
+.collection-card{position:relative;overflow:hidden;background:var(--black-card)}
+.collection-card-inner{padding:52px 36px;height:100%;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:background .5s var(--transition)}
+.collection-card::after{content:'';position:absolute;inset:0;border:1px solid transparent;transition:border-color .4s var(--transition);pointer-events:none;z-index:1}
+.collection-card:hover::after{border-color:rgba(201,168,76,.2)}
+.collection-card:hover .collection-card-inner{background:rgba(201,168,76,.025)}
+.collection-icon{font-size:40px;margin-bottom:20px;display:block;transition:transform .5s var(--transition),filter .5s}
+.collection-card:hover .collection-icon{transform:scale(1.12) translateY(-4px)}
+.collection-name{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.35em;color:var(--white);text-transform:uppercase;margin-bottom:14px;transition:color .3s}
+.collection-card:hover .collection-name{color:var(--gold-light)}
+.collection-desc{font-size:14px;color:var(--gray);line-height:1.8;max-width:230px;text-align:center}
+
+/* ── BRANDS ── */
+#brands{background:var(--black-soft);text-align:center}
+.brands-header{max-width:600px;margin:0 auto 72px}
+.brands-header .gold-line{margin:0 auto 40px}
+.brands-grid{display:flex;justify-content:center;gap:2px;flex-wrap:wrap;max-width:1000px;margin:0 auto;background:rgba(201,168,76,.05)}
+.brand-item{display:flex;flex-direction:column;align-items:center;gap:18px;padding:44px 48px;transition:all .4s var(--transition);min-width:230px;background:var(--black-card);position:relative;overflow:hidden}
+.brand-item::before{content:'';position:absolute;bottom:0;left:50%;width:0;height:1px;background:var(--gold);transition:all .5s var(--transition);transform:translateX(-50%)}
+.brand-item:hover::before{width:60%}
+.brand-item:hover{background:rgba(201,168,76,.04)}
+.brand-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;transition:color .3s}
+.brand-type{font-size:12px;color:var(--gray);letter-spacing:.15em;font-style:italic;font-family:'Cormorant',serif;font-size:15px}
+.brand-logo{width:130px;height:64px;object-fit:contain;opacity:.75;transition:opacity .4s}
+.brand-item:hover .brand-logo{opacity:1}
+.brand-logo-placeholder{width:130px;height:64px;border:1px dashed rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.25em;color:rgba(201,168,76,.35);text-transform:uppercase}
+
+/* ── EXPERIENCE ── */
+#experience{background:var(--black);position:relative;overflow:hidden}
+.experience-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 90% at 85% 50%,rgba(201,168,76,.035) 0%,transparent 65%)}
+.experience-grid{display:grid;grid-template-columns:1fr 1fr;gap:110px;align-items:start;max-width:1200px;margin:0 auto;position:relative}
+.experience-features{display:flex;flex-direction:column;gap:32px}
+.feature{display:flex;gap:28px;align-items:flex-start;padding:28px;border:1px solid rgba(201,168,76,.0);transition:all .4s var(--transition)}
+.feature:hover{border-color:rgba(201,168,76,.1);background:rgba(201,168,76,.02)}
+.feature-icon-wrap{width:44px;height:44px;border:1px solid rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;transition:all .4s}
+.feature:hover .feature-icon-wrap{border-color:var(--gold);background:rgba(201,168,76,.08)}
+.feature-title{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:var(--gold-light);text-transform:uppercase;margin-bottom:10px}
+.feature-desc{font-size:15px;color:var(--gray);line-height:1.8}
+.experience-quote{position:relative;padding:52px;border:1px solid rgba(201,168,76,.12);background:var(--black-card)}
+.experience-quote::before{content:'\201C';position:absolute;top:-20px;left:44px;font-family:'Cormorant Garamond',serif;font-size:140px;color:var(--gold);line-height:1;opacity:.25}
+.quote-text{font-family:'Cormorant Garamond',serif;font-size:clamp(19px,2.4vw,27px);font-style:italic;color:var(--white);line-height:1.7;margin-bottom:36px}
+.quote-author{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase}
+.quote-divider{width:32px;height:1px;background:var(--gold);margin-bottom:20px;opacity:.5}
+
+/* ── CASTLE HERO BACKGROUND ── */
+/* Το SVG του κάστρου κάθεται απόλυτα στο κάτω μέρος του hero,
+   με fade-out προς τα πάνω ώστε το logo/κείμενο να φαίνεται καθαρά */
+.hero-castle{
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:75%;
+  pointer-events:none;
+  z-index:0;
+  mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,0.9) 100%);
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.7) 55%, rgba(0,0,0,0.9) 100%);
+}
+.hero-castle svg{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+/* Σιγουρευόμαστε ότι όλο το hero content είναι πάνω από το SVG */
+#hero > *:not(.hero-bg):not(.hero-castle):not(.hero-lines){
+  position:relative;
+  z-index:1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GALLERY — Elegant carousel με filters
+   ══════════════════════════════════════════════════════════ */
+#gallery{background:var(--black-soft);text-align:center}
+.gallery-header{max-width:640px;margin:0 auto 48px;text-align:center}
+.gallery-intro{color:var(--gray);font-size:17px;line-height:1.9}
+.g-filters{display:flex;justify-content:center;gap:2px;margin-bottom:52px;flex-wrap:wrap}
+.g-filter{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.35em;color:var(--gray);background:transparent;border:1px solid rgba(201,168,76,.12);padding:12px 22px;cursor:pointer;transition:all .35s var(--transition);text-transform:uppercase}
+.g-filter:hover{color:var(--gold);border-color:rgba(201,168,76,.3)}
+.g-filter.active{color:var(--black);background:var(--gold);border-color:var(--gold)}
+.g-outer{position:relative;display:flex;align-items:center;max-width:1400px;margin:0 auto}
+.g-viewport{overflow:hidden;flex:1}
+.g-track{display:flex;transition:transform .7s cubic-bezier(0.4,0,0.2,1);will-change:transform}
+.g-item{min-width:calc(100%/3);padding:0 10px;flex-shrink:0;cursor:pointer}
+.g-item-inner{position:relative;background:var(--black-card);border:1px solid rgba(201,168,76,.08);aspect-ratio:1/1;overflow:hidden;transition:border-color .45s var(--transition),transform .45s var(--transition)}
+.g-item:hover .g-item-inner{border-color:rgba(201,168,76,.32);transform:translateY(-6px)}
+.g-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.g-ph-icon{font-size:44px;opacity:.18}
+.g-ph-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.3em;color:rgba(201,168,76,.28);text-transform:uppercase}
+.g-item-inner img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--transition)}
+.g-item:hover .g-item-inner img{transform:scale(1.04)}
+.g-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.92) 0%,transparent 50%);opacity:0;transition:opacity .4s var(--transition);display:flex;align-items:flex-end;padding:22px}
+.g-item:hover .g-overlay{opacity:1}
+.g-overlay-text{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:var(--gold-light);text-transform:uppercase}
+.g-item-inner::before,.g-item-inner::after{content:'';position:absolute;width:22px;height:22px;opacity:0;transition:opacity .4s var(--transition);z-index:2}
+.g-item-inner::before{top:14px;left:14px;border-top:1px solid var(--gold);border-left:1px solid var(--gold)}
+.g-item-inner::after{bottom:14px;right:14px;border-bottom:1px solid var(--gold);border-right:1px solid var(--gold)}
+.g-item:hover .g-item-inner::before,.g-item:hover .g-item-inner::after{opacity:1}
+.g-arrow{width:54px;height:54px;background:rgba(8,8,8,.85);border:1px solid rgba(201,168,76,.18);color:var(--gold);font-size:18px;cursor:pointer;transition:all .35s var(--transition);flex-shrink:0;display:flex;align-items:center;justify-content:center;z-index:2}
+.g-arrow:hover{background:var(--gold);color:var(--black);border-color:var(--gold)}
+.g-arrow:disabled{opacity:.18;cursor:not-allowed;pointer-events:none}
+.g-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:28px;padding:0 4px;max-width:1400px;margin-left:auto;margin-right:auto}
+.g-counter{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:var(--gray);text-transform:uppercase}
+.g-counter span{color:var(--gold);font-size:13px}
+.g-dots{display:flex;gap:6px;align-items:center}
+.g-dot{width:22px;height:1px;background:rgba(201,168,76,.2);border:none;padding:0;cursor:pointer;transition:all .4s var(--transition)}
+.g-dot.active{width:40px;background:var(--gold)}
+@media(max-width:1100px){.g-item{min-width:50%}}
+@media(max-width:640px){.g-item{min-width:100%}}
+#contact{background:var(--black)}
+.contact-wrapper{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:90px;align-items:start}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:12px}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:rgba(255,255,255,.02);border:none;border-bottom:1px solid rgba(201,168,76,.2);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:17px;padding:12px 4px;outline:none;transition:border-color .3s var(--transition),background .3s;appearance:none;-webkit-appearance:none;border-radius:0}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-bottom-color:var(--gold);background:rgba(201,168,76,.02)}
+.form-group textarea{min-height:120px;resize:none;border:1px solid rgba(201,168,76,.15);padding:14px 16px}
+.form-group textarea:focus{border-color:var(--gold)}
+.form-group select option{background:var(--black-card);color:var(--white)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.form-submit{width:100%;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.45em;text-transform:uppercase;color:var(--black);background:var(--gold);border:1px solid var(--gold);padding:20px 36px;cursor:pointer;transition:all .4s var(--transition);margin-top:12px;position:relative;overflow:hidden}
+.form-submit::before{content:'';position:absolute;inset:0;background:var(--gold-light);transform:translateX(-101%);transition:transform .4s var(--transition)}
+.form-submit:hover::before{transform:translateX(0)}
+.form-submit:hover{box-shadow:0 8px 32px rgba(201,168,76,.2);transform:translateY(-2px)}
+.form-submit span{position:relative;z-index:1}
+.form-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.form-message{margin-top:18px;padding:14px 20px;font-family:'Cormorant Garamond',serif;font-size:16px;display:none;border-left:2px solid}
+.form-message.success{display:block;color:#7EC87E;border-color:#7EC87E;background:rgba(126,200,126,.04)}
+.form-message.error{display:block;color:#E07070;border-color:#E07070;background:rgba(224,112,112,.04)}
+
+/* ── VISIT ── */
+#visit{background:var(--black-soft)}
+.visit-grid{display:grid;grid-template-columns:1fr 1fr;gap:90px;max-width:1200px;margin:0 auto;align-items:stretch}
+.contact-info{display:flex;flex-direction:column;gap:28px}
+.contact-item{display:flex;gap:20px;align-items:flex-start;padding:20px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.contact-item:last-child{border-bottom:none}
+.contact-item-icon{font-size:18px;flex-shrink:0;margin-top:2px;width:26px;opacity:.8}
+.contact-item-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;display:block}
+.contact-item-value{font-size:16px;color:var(--white-dim);line-height:1.7}
+.contact-item-value a{color:var(--white-dim);text-decoration:none;transition:color .3s}
+.contact-item-value a:hover{color:var(--gold)}
+.hours-grid{display:flex;flex-direction:column;margin-top:4px}
+.hours-row{display:flex;justify-content:space-between;font-size:15px;color:var(--white-dim);padding:6px 0}
+.hours-row span:first-child{color:var(--gray);font-size:13px;font-family:'Cinzel',serif;letter-spacing:.1em}
+.map-container{position:relative;display:flex;flex-direction:column;flex:1}
+.map-container::before{content:'';position:absolute;top:-20px;left:-20px;right:20px;bottom:20px;border:1px solid rgba(201,168,76,.12);pointer-events:none;z-index:0}
+.map-frame{width:100%;height:480px;border:none;display:block;position:relative;z-index:1;filter:grayscale(30%) contrast(1.08) brightness(.9)}
+.map-address-badge{position:absolute;bottom:0;left:0;right:0;background:rgba(8,8,8,.95);border-top:1px solid rgba(201,168,76,.2);padding:16px 24px;z-index:2;display:flex;align-items:center;gap:14px}
+.map-address-badge span:first-child{font-size:18px;opacity:.8}
+.map-address-badge-text{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--white-dim);line-height:1.6}
+.map-address-badge-text strong{color:var(--gold);font-weight:400;display:block;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:2px}
+
+/* ── SOCIAL ── */
+#social{background:var(--black);padding:64px;text-align:center}
+.social-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.6em;color:var(--gray);text-transform:uppercase;margin-bottom:32px;display:block}
+.social-links{display:flex;gap:2px;justify-content:center;flex-wrap:wrap}
+.social-link{display:flex;align-items:center;gap:10px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;color:var(--gray);text-decoration:none;text-transform:uppercase;padding:18px 36px;border:1px solid rgba(201,168,76,.1);transition:all .4s var(--transition);background:var(--black-card)}
+.social-link:hover{color:var(--gold);border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04)}
+
+/* ── FOOTER ── */
+footer{background:var(--black-soft);padding:64px 64px 44px;text-align:center;border-top:1px solid rgba(201,168,76,.08)}
+.footer-logo{font-family:'Cinzel',serif;font-size:16px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+.footer-est{font-family:'Cormorant',serif;font-style:italic;font-size:14px;color:var(--gray);letter-spacing:.25em;margin-bottom:36px}
+.footer-divider{width:48px;height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,.4),transparent);margin:0 auto 36px}
+.footer-copy{font-size:12px;color:var(--gray);letter-spacing:.1em;line-height:2;font-family:'Cinzel',serif}
+
+/* ── WHATSAPP ── */
+.whatsapp-btn{display:inline-flex;align-items:center;gap:8px;color:#25D366;text-decoration:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;border:1px solid rgba(37,211,102,.25);padding:12px 20px;transition:all .4s var(--transition);background:rgba(37,211,102,.03)}
+.whatsapp-btn:hover{background:rgba(37,211,102,.1);border-color:rgba(37,211,102,.5);transform:translateY(-2px)}
+
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(10px)}}
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .9s var(--transition),transform .9s var(--transition)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  nav{padding:16px 28px}
+  nav.scrolled{padding:14px 28px}
+  .nav-links,.nav-social{display:none}
+  .hamburger{display:flex}
+  .lang-switcher{display:none}
+  section{padding:80px 28px}
+  .about-grid,.experience-grid,.visit-grid,.contact-wrapper{grid-template-columns:1fr;gap:52px}
+  .about-image{order:-1}
+  .about-image img{height:320px}
+  #about::before{font-size:120px}
+  .collections-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .collection-card-inner{min-height:200px;padding:40px 24px}
+  .brands-grid{gap:1px}
+  .brand-item{min-width:180px;padding:32px 24px}
+  .brand-logo,.brand-logo-placeholder{width:100px;height:50px}
+  .hero-logo-img{width:150px;height:150px}
+  #social{padding:48px 28px}
+  footer{padding:48px 28px 36px}
+  .form-row{grid-template-columns:1fr}
+  .carousel-item{min-width:50%}
+  .experience-grid{gap:52px}
+}
+@media(max-width:640px){
+  .collections-grid{grid-template-columns:1fr}
+  .carousel-item{min-width:100%}
+  .brands-grid{flex-direction:column;align-items:center}
+  .brand-item{width:100%;max-width:320px}
+}
+</style>
+</head>
+<body>
+
+<script>
+const T={
+el:{
+  nav_history:"Ιστορία",nav_collections:"Συλλογές",nav_watches:"Ρολόγια",nav_contact:"Επικοινωνία",nav_visit:"Επίσκεψη",
+  hero_tagline:"Παλιά Πόλη Ρόδου · Από το 1965",hero_sub:"Κοσμήματα · Ρολόγια · Δώρα",hero_btn1:"Οι Συλλογές μας",hero_btn2:"Επισκεφθείτε μας",hero_scroll:"Scroll",
+  about_label:"Η Ιστορία μας",about_title:"Τρεις Γενιές<br><em>Τέχνης & Πάθους</em>",
+  about_p1:"Το <strong>Georgallis Jewellery</strong> ιδρύθηκε το <strong>1965</strong> από τον <strong>Θεόδωρο Γεωργαλλή</strong> στην καρδιά της Παλιάς Πόλης της Ρόδου — ένα από τα πιο ιστορικά μέρη της Μεσογείου.",
+  about_p2:"Στις αρχές της δεκαετίας του 2000, η σκυτάλη πέρασε στον γιο του, <strong>Γεώργιο Γεωργαλλή</strong>, ο οποίος συνέχισε την παράδοση εμπλουτίζοντας τη συλλογή με σύγχρονες δημιουργίες χωρίς να χάσει την αυθεντική ψυχή του καταστήματος.",
+  about_p3:"Σήμερα, η <strong>τρίτη γενιά</strong>, ο <strong>Θεόδωρος</strong> και ο <strong>Στέργος Γεωργαλλής</strong>, μπαίνει δυναμικά στο οικογενειακό επάγγελμα, φέρνοντας νέα ενέργεια και όραμα.",
+  stat1:"Χρόνια εμπειρίας",stat2:"Γενιές",stat3:"Καράτια χρυσός",stat4:"Έτος ίδρυσης",
+  about_caption:"Η οικογένεια Γεωργαλλή — τρεις γενιές στο ίδιο κατάστημα",
+  col_label:"Τι θα βρείτε",col_title:"Οι <em>Συλλογές</em> μας",col_intro:"Από κοσμήματα εμπνευσμένα από τη Ρόδο έως βέρες γάμου και δώρα βάπτισης — κάθε κομμάτι είναι μια ιστορία.",
+  col1_name:"Χρυσά Κοσμήματα",col1_desc:"Δαχτυλίδια, σκουλαρίκια, βραχιόλια και κολιέ σε 14 & 18 καράτια. Μοναδικά σχέδια εμπνευσμένα από την παράδοση της Ρόδου.",
+  col2_name:"Κωνσταντινάτα",col2_desc:"Παραδοσιακά βυζαντινά κωνσταντινάτα σε χρυσό, ιδανικά δώρα με βαθύ συμβολισμό.",
+  col3_name:"Κοσμήματα για Βαπτίσεις",col3_desc:"Σταυροί και δώρα βάπτισης σε χρυσό. Πλήρης σειρά για αγόρια και κορίτσια.",
+  col4_name:"Κοσμήματα για Γάμους",col4_desc:"Βέρες σε κίτρινο, λευκό και ροζ χρυσό. Κλασικές και σύγχρονες γραμμές για κάθε ζευγάρι.",
+  col5_name:"Αλυσίδες & Μαργαριτάρια",col5_desc:"Χρυσές αλυσίδες κάθε τύπου και φυσικά μαργαριτάρια για κάθε στυλ και περίσταση.",
+  col6_name:"Ασημένια Κοσμήματα",col6_desc:"Επιλεγμένα ασημένια κοσμήματα για κάθε γούστο — από minimal σύγχρονα ως παραδοσιακά.",
+  brands_label:"Επίσημοι Συνεργάτες",brands_title:"<em>Ρολόγια</em> Επωνύμων",brands_intro:"Επίσημοι αντιπρόσωποι κορυφαίων marques στη Ρόδο.",
+  exp_label:"Γιατί εμάς",exp_title:"Η <em>Εμπειρία</em><br>Georgallis",
+  feat1_title:"Χειροποίητη Τέχνη",feat1_desc:"Κάθε κόσμημα φτιάχνεται με χέρι από έμπειρους τεχνίτες, διατηρώντας τις παραδόσεις της ελληνικής χρυσοχοΐας.",
+  feat2_title:"Εγγύηση Ποιότητας",feat2_desc:"Αποκλειστικά πιστοποιημένα χρυσά κοσμήματα 14 και 18 καρατίων με πλήρη εγγύηση γνησιότητας.",
+  feat3_title:"Εξατομικευμένη Εξυπηρέτηση",feat3_desc:"60+ χρόνια εμπειρίας σημαίνει ότι ξέρουμε να βρούμε το τέλειο κόσμημα για κάθε περίσταση.",
+  feat4_title:"Παλιά Πόλη Ρόδου",feat4_desc:"Βρισκόμαστε στην καρδιά της μεσαιωνικής παλιάς πόλης — ένα μοναδικό κατάστημα σε έναν μοναδικό τόπο.",
+  feat5_title:"Εργαστήριο Επισκευών",feat5_desc:"Διαθέτουμε πλήρως εξοπλισμένο εργαστήριο με επαγγελματικά μηχανήματα για επισκευές κοσμημάτων, αλλαγές μεγέθους, καθαρισμό και εκτίμηση χρυσού.",
+  quote:'"Ένα κόσμημα δεν είναι απλώς ένα αντικείμενο — είναι μια μνήμη, μια υπόσχεση, μια ιστορία που κρατά αιώνες."',
+  quote_author:"— Οικογένεια Γεωργαλλή, από το 1965",
+  contact_label:"Επικοινωνία",contact_title:"Στείλτε μας<br><em>Μήνυμα</em>",contact_intro:"Για ερωτήσεις, παραγγελίες ή οτιδήποτε άλλο — είμαστε εδώ.",
+  form_name:"Ονοματεπώνυμο",form_email:"Email",form_phone:"Τηλέφωνο (προαιρετικό)",form_subject:"Θέμα",
+  form_s0:"Επιλέξτε θέμα...",form_s1:"Ερώτηση για κόσμημα",form_s2:"Παραγγελία / Τιμή",form_s3:"Βέρες γάμου",form_s4:"Δώρα βάπτισης",form_s5:"Ρολόγια",form_s6:"Επισκευή κοσμήματος",form_s7:"Εκτίμηση χρυσού",form_s8:"Αλλαγή μπαταρίας ρολογιού",form_s9:"Άλλο",
+  form_message:"Μήνυμα",form_submit:"Αποστολή Μηνύματος",form_sending:"Αποστολή...",
+  form_success:"✓ Το μήνυμά σας στάλθηκε! Θα επικοινωνήσουμε σύντομα.",form_error:"✗ Σφάλμα αποστολής. Παρακαλώ επικοινωνήστε τηλεφωνικά.",
+  visit_label:"Βρείτε μας",visit_title:"Επισκεφθείτε<br><em>το Κατάστημά μας</em>",
+  addr_label:"Διεύθυνση",addr_val:"Πρωτογένους 20, Παλιά Πόλη<br>Ρόδος 851 00, Ελλάδα",
+  tel_label:"Τηλέφωνο",mobile_label:"Κινητό",whatsapp_label:"WhatsApp",email_label:"Email",hours_label:"Ωράριο Λειτουργίας",
+  h_days:"Καθημερινά",h_open:"10:00 – 23:00",
+  gallery_label:"Φωτογραφίες",gallery_title:"Η <em>Συλλογή</em> μας",gallery_intro:"Μια ματιά στα κοσμήματα και τα ρολόγια που θα βρείτε στο κατάστημά μας.",
+  filter_all:"Όλα",filter_gold:"Χρυσά",filter_wedding:"Γάμοι",filter_baptism:"Βαπτίσεις",filter_watches:"Ρολόγια",filter_silver:"Ασημένια",
+  cat_gold:"Χρυσά Κοσμήματα",cat_wedding:"Κοσμήματα Γάμου",cat_baptism:"Κοσμήματα Βάπτισης",cat_watches:"Ρολόγια",cat_silver:"Ασημένια Κοσμήματα",
+  footer_copy:"Πρωτογένους 20, Παλιά Πόλη Ρόδου &nbsp;·&nbsp; +30 2241 022090<br>© 2025 Georgallis Jewellery. Όλα τα δικαιώματα διατηρούνται."
+},
+en:{
+  nav_history:"Our Story",nav_collections:"Collections",nav_watches:"Watches",nav_contact:"Contact",nav_visit:"Visit Us",
+  hero_tagline:"Old Town Rhodes · Since 1965",hero_sub:"Jewellery · Watches · Gifts",hero_btn1:"Our Collections",hero_btn2:"Visit Us",hero_scroll:"Scroll",
+  about_label:"Our Story",about_title:"Three Generations<br><em>of Craft & Passion</em>",
+  about_p1:"<strong>Georgallis Jewellery</strong> was founded in <strong>1965</strong> by <strong>Theodoros Georgallis</strong> in the heart of Rhodes Old Town — one of the most historic places in the Mediterranean.",
+  about_p2:"In the early 2000s, the baton passed to his son, <strong>Georgios Georgallis</strong>, who continued the tradition while enriching the collection with contemporary creations, never losing the authentic soul of the store.",
+  about_p3:"Today, the <strong>third generation</strong>, <strong>Theodoros</strong> and <strong>Stergos Georgallis</strong>, is dynamically entering the family business, bringing fresh energy and vision.",
+  stat1:"Years of experience",stat2:"Generations",stat3:"Karat gold",stat4:"Year founded",
+  about_caption:"The Georgallis family — three generations in the same store",
+  col_label:"What You'll Find",col_title:"Our <em>Collections</em>",col_intro:"From jewellery inspired by Rhodes to wedding rings and baptism gifts — each piece tells a story.",
+  col1_name:"Gold Jewellery",col1_desc:"Rings, earrings, bracelets and necklaces in 14 & 18 karat gold. Unique designs inspired by the tradition of Rhodes.",
+  col2_name:"Konstantinata",col2_desc:"Traditional Byzantine gold coins, ideal gifts with deep symbolism.",
+  col3_name:"Baptism Jewellery",col3_desc:"Crosses and baptism gifts in gold. Complete range for boys and girls.",
+  col4_name:"Wedding Jewellery",col4_desc:"Wedding bands in yellow, white and rose gold. Classic and modern designs for every couple.",
+  col5_name:"Chains & Pearls",col5_desc:"Gold chains of every style and natural pearls for every occasion.",
+  col6_name:"Silver Jewellery",col6_desc:"Selected silver jewellery for every taste — from minimal modern to traditional.",
+  brands_label:"Official Partners",brands_title:"<em>Watch</em> Brands",brands_intro:"Official representatives of leading watch brands in Rhodes.",
+  exp_label:"Why Choose Us",exp_title:"The Georgallis<br><em>Experience</em>",
+  feat1_title:"Handcrafted Art",feat1_desc:"Every piece is handmade by skilled artisans, preserving the traditions of Greek goldsmithing.",
+  feat2_title:"Quality Guarantee",feat2_desc:"Exclusively certified 14 and 18 karat gold jewellery with full authenticity guarantee.",
+  feat3_title:"Personalised Service",feat3_desc:"60+ years of experience means we know how to find the perfect piece for every occasion.",
+  feat4_title:"Rhodes Old Town",feat4_desc:"Located in the heart of the medieval old town — a unique store in a unique place.",
+  feat5_title:"Repair Workshop",feat5_desc:"We have a fully equipped workshop with professional machinery for jewellery repairs, resizing, cleaning and gold valuation.",
+  quote:'"A piece of jewellery is not just an object — it is a memory, a promise, a story that lasts for centuries."',
+  quote_author:"— The Georgallis Family, since 1965",
+  contact_label:"Contact",contact_title:"Send Us<br><em>a Message</em>",contact_intro:"For enquiries, orders or anything else — we are here.",
+  form_name:"Full Name",form_email:"Email",form_phone:"Phone (optional)",form_subject:"Subject",
+  form_s0:"Select a subject...",form_s1:"Jewellery enquiry",form_s2:"Order / Pricing",form_s3:"Wedding rings",form_s4:"Baptism gifts",form_s5:"Watches",form_s6:"Jewellery repair",form_s7:"Gold valuation",form_s8:"Watch battery replacement",form_s9:"Other",
+  form_message:"Message",form_submit:"Send Message",form_sending:"Sending...",
+  form_success:"✓ Your message has been sent! We will get back to you shortly.",form_error:"✗ Sending failed. Please contact us by phone.",
+  visit_label:"Find Us",visit_title:"Visit<br><em>Our Store</em>",
+  addr_label:"Address",addr_val:"Protogenous 20, Old Town<br>Rhodes 851 00, Greece",
+  tel_label:"Phone",mobile_label:"Mobile",whatsapp_label:"WhatsApp",email_label:"Email",hours_label:"Opening Hours",
+  h_days:"Daily",h_open:"10:00 – 23:00",
+  gallery_label:"Gallery",gallery_title:"Our <em>Collection</em>",gallery_intro:"A glimpse of the jewellery and watches you will find in our store.",
+  filter_all:"All",filter_gold:"Gold",filter_wedding:"Wedding",filter_baptism:"Baptism",filter_watches:"Watches",filter_silver:"Silver",
+  cat_gold:"Gold Jewellery",cat_wedding:"Wedding Jewellery",cat_baptism:"Baptism Jewellery",cat_watches:"Watches",cat_silver:"Silver Jewellery",
+  footer_copy:"Protogenous 20, Old Town Rhodes &nbsp;·&nbsp; +30 2241 022090<br>© 2025 Georgallis Jewellery. All rights reserved."
+}
+};
+
+let currentLang='el';
+
+// ══════════════════════════════════════════════════════════
+// setLang() — Αλλάζει τη γλώσσα του site
+// Διατρέχει όλα τα [data-t] elements και αντικαθιστά το
+// περιεχόμενό τους με το κείμενο της επιλεγμένης γλώσσας
+// ══════════════════════════════════════════════════════════
+function setLang(lang){
+  currentLang = lang;
+  const t = T[lang];
+
+  // Αντικατάσταση κειμένου σε όλα τα data-t elements
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+
+  // Ενεργοποίηση του σωστού lang button (desktop + mobile)
+  document.querySelectorAll('.lang-btn, .mobile-lang button').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+  });
+
+  // Αλλαγή lang attribute στο <html> (για SEO & accessibility)
+  document.documentElement.lang = lang === 'el' ? 'el' : 'en';
+}
+</script>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">Georgallis Jewellery</a>
+  <ul class="nav-links">
+    <li><a href="#about" data-t="nav_history">Ιστορία</a></li>
+    <li><a href="#collections" data-t="nav_collections">Συλλογές</a></li>
+    <li><a href="#brands" data-t="nav_watches">Ρολόγια</a></li>
+    <li><a href="#contact" data-t="nav_contact">Επικοινωνία</a></li>
+    <li><a href="#visit" data-t="nav_visit">Επίσκεψη</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-social">
+      <a href="https://www.instagram.com/georgallisjewellery" target="_blank">Instagram</a>
+      <a href="https://www.facebook.com/georgallisjewellery" target="_blank">Facebook</a>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="el" onclick="setLang('el')">ΕΛ</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">×</button>
+  <a href="#about" class="mobile-link" data-t="nav_history">Ιστορία</a>
+  <a href="#collections" class="mobile-link" data-t="nav_collections">Συλλογές</a>
+  <a href="#brands" class="mobile-link" data-t="nav_watches">Ρολόγια</a>
+  <a href="#contact" class="mobile-link" data-t="nav_contact">Επικοινωνία</a>
+  <a href="#visit" class="mobile-link" data-t="nav_visit">Επίσκεψη</a>
+  <a href="https://www.instagram.com/georgallisjewellery" target="_blank">Instagram</a>
+  <a href="https://www.facebook.com/georgallisjewellery" target="_blank">Facebook</a>
+  <div class="mobile-lang">
+    <button class="active" data-lang="el" onclick="setLang('el');document.getElementById('mobileMenu').classList.remove('open')">ΕΛ</button>
+    <button data-lang="en" onclick="setLang('en');document.getElementById('mobileMenu').classList.remove('open')">EN</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+
+  <!-- ★ ΚΆΣΤΡΟ BACKGROUND SVG
+       Το Παλάτι των Ιπποτών ως illustrated background.
+       Αν θέλεις να το αφαιρέσεις, διέγραψε το <div class="hero-castle"> block -->
+  <div class="hero-castle">
+    <svg viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <linearGradient id="cSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#080808"/>
+          <stop offset="60%" stop-color="#150E04"/>
+          <stop offset="100%" stop-color="#1E1408"/>
+        </linearGradient>
+        <linearGradient id="cStone" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#C9A84C"/>
+          <stop offset="100%" stop-color="#7A5E1E"/>
+        </linearGradient>
+        <linearGradient id="cTower" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#B8922E"/>
+          <stop offset="100%" stop-color="#4A380A"/>
+        </linearGradient>
+        <linearGradient id="cGround" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2A1E06"/>
+          <stop offset="100%" stop-color="#080604"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Sky -->
+      <rect x="0" y="0" width="680" height="420" fill="url(#cSky)"/>
+
+      <!-- Stars -->
+      <circle cx="60"  cy="28"  r="1"   fill="#E8D080" opacity="0.5"/>
+      <circle cx="130" cy="16"  r="0.7" fill="#E8D080" opacity="0.4"/>
+      <circle cx="200" cy="38"  r="0.6" fill="#E8D080" opacity="0.45"/>
+      <circle cx="310" cy="13"  r="0.9" fill="#E8D080" opacity="0.3"/>
+      <circle cx="420" cy="25"  r="0.7" fill="#E8D080" opacity="0.45"/>
+      <circle cx="500" cy="10"  r="0.9" fill="#E8D080" opacity="0.35"/>
+      <circle cx="580" cy="32"  r="0.7" fill="#E8D080" opacity="0.5"/>
+      <circle cx="640" cy="18"  r="0.6" fill="#E8D080" opacity="0.3"/>
+      <circle cx="90"  cy="52"  r="0.5" fill="#E8D080" opacity="0.3"/>
+      <circle cx="460" cy="48"  r="0.5" fill="#E8D080" opacity="0.25"/>
+
+      <!-- Ambient glow -->
+      <ellipse cx="340" cy="240" rx="270" ry="130" fill="#C9A84C" opacity="0.05"/>
+
+      <!-- Ground -->
+      <rect x="0" y="360" width="680" height="60" fill="url(#cGround)"/>
+      <rect x="0" y="358" width="680" height="3" fill="#C9A84C" opacity="0.1"/>
+
+      <!-- ── MAIN WALL ── -->
+      <rect x="80" y="185" width="520" height="180" fill="url(#cStone)" opacity="0.88"/>
+      <rect x="80" y="185" width="520" height="10"  fill="#E8D080" opacity="0.12"/>
+      <rect x="80" y="340" width="520" height="25"  fill="#3A2A08" opacity="0.55"/>
+      <!-- Stone lines -->
+      <line x1="80" y1="210" x2="600" y2="210" stroke="#7A5E1E" stroke-width="0.5" opacity="0.45"/>
+      <line x1="80" y1="235" x2="600" y2="235" stroke="#7A5E1E" stroke-width="0.5" opacity="0.35"/>
+      <line x1="80" y1="260" x2="600" y2="260" stroke="#7A5E1E" stroke-width="0.5" opacity="0.35"/>
+      <line x1="80" y1="285" x2="600" y2="285" stroke="#7A5E1E" stroke-width="0.5" opacity="0.28"/>
+      <line x1="80" y1="310" x2="600" y2="310" stroke="#7A5E1E" stroke-width="0.5" opacity="0.28"/>
+      <line x1="80" y1="335" x2="600" y2="335" stroke="#7A5E1E" stroke-width="0.5" opacity="0.25"/>
+      <line x1="160" y1="185" x2="160" y2="365" stroke="#7A5E1E" stroke-width="0.4" opacity="0.25"/>
+      <line x1="240" y1="185" x2="240" y2="365" stroke="#7A5E1E" stroke-width="0.4" opacity="0.25"/>
+      <line x1="440" y1="185" x2="440" y2="365" stroke="#7A5E1E" stroke-width="0.4" opacity="0.25"/>
+      <line x1="520" y1="185" x2="520" y2="365" stroke="#7A5E1E" stroke-width="0.4" opacity="0.25"/>
+
+      <!-- Wall battlements -->
+      <rect x="88"  y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="116" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="144" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="172" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="450" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="478" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="506" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="534" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+      <rect x="562" y="168" width="18" height="20" fill="url(#cStone)" rx="1"/>
+
+      <!-- ── LEFT TOWER ── -->
+      <rect x="105" y="105" width="90" height="260" fill="url(#cTower)" rx="1"/>
+      <rect x="105" y="105" width="13" height="260" fill="#2A1E04" opacity="0.4"/>
+      <rect x="182" y="105" width="13" height="260" fill="#E8D080" opacity="0.07"/>
+      <line x1="105" y1="130" x2="195" y2="130" stroke="#5A420E" stroke-width="0.5" opacity="0.45"/>
+      <line x1="105" y1="155" x2="195" y2="155" stroke="#5A420E" stroke-width="0.5" opacity="0.38"/>
+      <line x1="105" y1="180" x2="195" y2="180" stroke="#5A420E" stroke-width="0.5" opacity="0.35"/>
+      <line x1="105" y1="210" x2="195" y2="210" stroke="#5A420E" stroke-width="0.5" opacity="0.28"/>
+      <line x1="105" y1="240" x2="195" y2="240" stroke="#5A420E" stroke-width="0.5" opacity="0.28"/>
+      <line x1="105" y1="290" x2="195" y2="290" stroke="#5A420E" stroke-width="0.5" opacity="0.25"/>
+      <!-- Left tower battlements -->
+      <rect x="108" y="88"  width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="130" y="88"  width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="152" y="88"  width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="174" y="88"  width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="105" y="105" width="90" height="4" fill="#E8D080" opacity="0.18"/>
+      <!-- Left tower windows -->
+      <rect x="135" y="192" width="30" height="42" fill="#080604" rx="4" opacity="0.9"/>
+      <ellipse cx="150" cy="192" rx="15" ry="8" fill="#080604" opacity="0.9"/>
+      <rect x="135" y="268" width="30" height="36" fill="#080604" rx="3" opacity="0.85"/>
+      <ellipse cx="150" cy="268" rx="15" ry="7" fill="#080604" opacity="0.85"/>
+
+      <!-- ── RIGHT TOWER ── -->
+      <rect x="485" y="120" width="90" height="245" fill="url(#cTower)" rx="1"/>
+      <rect x="485" y="120" width="13" height="245" fill="#E8D080" opacity="0.06"/>
+      <rect x="562" y="120" width="13" height="245" fill="#1E1404" opacity="0.5"/>
+      <line x1="485" y1="145" x2="575" y2="145" stroke="#5A420E" stroke-width="0.5" opacity="0.45"/>
+      <line x1="485" y1="170" x2="575" y2="170" stroke="#5A420E" stroke-width="0.5" opacity="0.38"/>
+      <line x1="485" y1="200" x2="575" y2="200" stroke="#5A420E" stroke-width="0.5" opacity="0.3"/>
+      <line x1="485" y1="240" x2="575" y2="240" stroke="#5A420E" stroke-width="0.5" opacity="0.28"/>
+      <line x1="485" y1="290" x2="575" y2="290" stroke="#5A420E" stroke-width="0.5" opacity="0.25"/>
+      <!-- Right tower battlements -->
+      <rect x="488" y="103" width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="510" y="103" width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="532" y="103" width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="554" y="103" width="16" height="20" fill="url(#cTower)" rx="1"/>
+      <rect x="485" y="120" width="90" height="4" fill="#E8D080" opacity="0.16"/>
+      <!-- Right tower windows -->
+      <rect x="515" y="207" width="30" height="42" fill="#080604" rx="4" opacity="0.9"/>
+      <ellipse cx="530" cy="207" rx="15" ry="8" fill="#080604" opacity="0.9"/>
+      <rect x="515" y="282" width="30" height="36" fill="#080604" rx="3" opacity="0.85"/>
+      <ellipse cx="530" cy="282" rx="15" ry="7" fill="#080604" opacity="0.85"/>
+
+      <!-- ── CENTRAL GATE ── -->
+      <rect x="278" y="228" width="124" height="137" fill="#3A2808" opacity="0.55"/>
+      <rect x="288" y="268" width="104" height="97"  fill="#080604" opacity="0.95"/>
+      <ellipse cx="340" cy="268" rx="52" ry="26" fill="#080604" opacity="0.95"/>
+      <!-- Arch decorative -->
+      <path d="M288,268 Q288,242 340,242 Q392,242 392,268" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity="0.4"/>
+      <!-- Keystone -->
+      <polygon points="340,242 330,258 350,258" fill="#C9A84C" opacity="0.25"/>
+      <!-- Gate pillars -->
+      <rect x="278" y="228" width="8" height="137" fill="#C9A84C" opacity="0.15"/>
+      <rect x="394" y="228" width="8" height="137" fill="#C9A84C" opacity="0.15"/>
+
+      <!-- ── WALL WINDOWS ── -->
+      <rect x="213" y="213" width="28" height="38" fill="#080604" rx="3" opacity="0.82"/>
+      <ellipse cx="227" cy="213" rx="14" ry="7" fill="#080604" opacity="0.82"/>
+      <rect x="213" y="293" width="28" height="34" fill="#080604" rx="3" opacity="0.75"/>
+      <ellipse cx="227" cy="293" rx="14" ry="6" fill="#080604" opacity="0.75"/>
+      <rect x="432" y="213" width="28" height="38" fill="#080604" rx="3" opacity="0.82"/>
+      <ellipse cx="446" cy="213" rx="14" ry="7" fill="#080604" opacity="0.82"/>
+      <rect x="432" y="293" width="28" height="34" fill="#080604" rx="3" opacity="0.75"/>
+      <ellipse cx="446" cy="293" rx="14" ry="6" fill="#080604" opacity="0.75"/>
+
+      <!-- Cobblestone ground lines -->
+      <line x1="80"  y1="363" x2="600" y2="363" stroke="#C9A84C" stroke-width="0.4" opacity="0.12"/>
+      <line x1="80"  y1="373" x2="600" y2="373" stroke="#C9A84C" stroke-width="0.4" opacity="0.08"/>
+
+      <!-- Side vignettes -->
+      <rect x="0"   y="0" width="70"  height="420" fill="#080808" opacity="0.65"/>
+      <rect x="610" y="0" width="70"  height="420" fill="#080808" opacity="0.65"/>
+
+      <!-- Top gold line accent -->
+      <rect x="0" y="0" width="680" height="1.5" fill="#C9A84C" opacity="0.3"/>
+    </svg>
+  </div>
+  <div class="hero-ornament"></div>
+  <img src="aLOGO.png" alt="Georgallis Jewellery Logo" class="hero-logo-img">
+  <p class="hero-tagline" data-t="hero_tagline">Παλιά Πόλη Ρόδου · Από το 1965</p>
+  <h1 class="hero-title">Georgallis<br><span>Jewellery</span></h1>
+  <p class="hero-sub" data-t="hero_sub">Κοσμήματα · Ρολόγια · Δώρα</p>
+  <div class="hero-divider"><span>◆</span></div>
+  <div class="hero-cta">
+    <a href="#collections" class="btn-primary" data-t="hero_btn1"><span>Our Collections</span></a>
+    <a href="#visit" class="btn-outline" data-t="hero_btn2">Visit Us</a>
+  </div>
+  <div class="scroll-indicator">
+    <span data-t="hero_scroll">Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <span class="section-label" data-t="about_label">Η Ιστορία μας</span>
+      <h2 class="section-title" data-t="about_title">Τρεις Γενιές<br><em>Τέχνης & Πάθους</em></h2>
+      <div class="gold-line"></div>
+      <p data-t="about_p1">Το <strong>Georgallis Jewellery</strong> ιδρύθηκε το <strong>1965</strong> από τον <strong>Θεόδωρο Γεωργαλλή</strong> στην καρδιά της Παλιάς Πόλης της Ρόδου — ένα από τα πιο ιστορικά μέρη της Μεσογείου.</p>
+      <p data-t="about_p2">Στις αρχές της δεκαετίας του 2000, η σκυτάλη πέρασε στον γιο του, <strong>Γεώργιο Γεωργαλλή</strong>, ο οποίος συνέχισε την παράδοση εμπλουτίζοντας τη συλλογή με σύγχρονες δημιουργίες χωρίς να χάσει την αυθεντική ψυχή του καταστήματος.</p>
+      <p data-t="about_p3">Σήμερα, η <strong>τρίτη γενιά</strong>, ο <strong>Θεόδωρος</strong> και ο <strong>Στέργος Γεωργαλλής</strong>, μπαίνει δυναμικά στο οικογενειακό επάγγελμα, φέρνοντας νέα ενέργεια και όραμα.</p>
+      <div class="about-stats">
+        <div class="stat"><span class="stat-number">60+</span><span class="stat-label" data-t="stat1">Χρόνια εμπειρίας</span></div>
+        <div class="stat"><span class="stat-number">3</span><span class="stat-label" data-t="stat2">Γενιές</span></div>
+        <div class="stat"><span class="stat-number">14–18K</span><span class="stat-label" data-t="stat3">Καράτια χρυσός</span></div>
+        <div class="stat"><span class="stat-number">1965</span><span class="stat-label" data-t="stat4">Έτος ίδρυσης</span></div>
+      </div>
+    </div>
+    <div class="about-image reveal">
+      <img src="IMG_7258.jpg" alt="Georgallis family">
+      <div class="about-image-caption" data-t="about_caption">Η οικογένεια Γεωργαλλή — τρεις γενιές στο ίδιο κατάστημα</div>
+    </div>
+  </div>
+</section>
+
+<!-- COLLECTIONS -->
+<section id="collections">
+  <div class="collections-header reveal">
+    <span class="section-label" data-t="col_label">Τι θα βρείτε</span>
+    <h2 class="section-title" data-t="col_title">Οι <em>Συλλογές</em> μας</h2>
+    <div class="gold-line"></div>
+    <p style="color:var(--gray);font-size:17px;line-height:1.8" data-t="col_intro">Από κοσμήματα εμπνευσμένα από τη Ρόδο έως βέρες γάμου και δώρα βάπτισης — κάθε κομμάτι είναι μια ιστορία.</p>
+  </div>
+  <div class="collections-grid reveal">
+    <div class="collection-card">
+      <div class="collection-card-inner">
+        <span class="collection-icon">💍</span>
+        <div class="collection-name" data-t="col1_name">Χρυσά Κοσμήματα</div>
+        <p class="collection-desc" data-t="col1_desc">Δαχτυλίδια, σκουλαρίκια, βραχιόλια και κολιέ σε 14 & 18 καράτια. Μοναδικά σχέδια εμπνευσμένα από την παράδοση της Ρόδου.</p>
+      </div>
+    </div>
+    <div class="collection-card">
+      <div class="collection-card-inner">
+        <span class="collection-icon">🏛️</span>
+        <div class="collection-name" data-t="col2_name">Κωνσταντινάτα</div>
+        <p class="collection-desc" data-t="col2_desc">Παραδοσιακά βυζαντινά κωνσταντινάτα σε χρυσό, ιδανικά δώρα με βαθύ συμβολισμό.</p>
+      </div>
+    </div>
+    <div class="collection-card">
+      <div class="collection-card-inner">
+        <span class="collection-icon">✝️</span>
+        <div class="collection-name" data-t="col3_name">Κοσμήματα για Βαπτίσεις</div>
+        <p class="collection-desc" data-t="col3_desc">Σταυροί και δώρα βάπτισης σε χρυσό. Πλήρης σειρά για αγόρια και κορίτσια.</p>
+      </div>
+    </div>
+    <div class="collection-card">
+      <div class="collection-card-inner">
+        <span class="collection-icon">💑</span>
+        <div class="collection-name" data-t="col4_name">Κοσμήματα για Γάμους</div>
+        <p class="collection-desc" data-t="col4_desc">Βέρες σε κίτρινο, λευκό και ροζ χρυσό. Κλασικές και σύγχρονες γραμμές για κάθε ζευγάρι.</p>
+      </div>
+    </div>
+    <div class="collection-card">
+      <div class="collection-card-inner">
+        <span class="collection-icon">🪬</span>
+        <div class="collection-name" data-t="col5_name">Αλυσίδες & Μαργαριτάρια</div>
+        <p class="collection-desc" data-t="col5_desc">Χρυσές αλυσίδες κάθε τύπου και φυσικά μαργαριτάρια για κάθε στυλ και περίσταση.</p>
+      </div>
+    </div>
+    <div class="collection-card">
+      <div class="collection-card-inner">
+        <span class="collection-icon">🥈</span>
+        <div class="collection-name" data-t="col6_name">Ασημένια Κοσμήματα</div>
+        <p class="collection-desc" data-t="col6_desc">Επιλεγμένα ασημένια κοσμήματα για κάθε γούστο — από minimal σύγχρονα ως παραδοσιακά.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRANDS -->
+<section id="brands">
+  <div class="brands-header reveal">
+    <span class="section-label" data-t="brands_label">Επίσημοι Συνεργάτες</span>
+    <h2 class="section-title" data-t="brands_title"><em>Ρολόγια</em> Επωνύμων</h2>
+    <div class="gold-line"></div>
+    <p style="color:var(--gray);font-size:17px;line-height:1.8" data-t="brands_intro">Επίσημοι αντιπρόσωποι κορυφαίων marques στη Ρόδο.</p>
+  </div>
+  <div class="brands-grid reveal">
+
+    <!-- ★ BRAND 1: CERRUTI 1881
+         Βάλε το logo σε αρχείο: logo-cerruti.png (ίδιος φάκελος με index.html)
+         Μετά άλλαξε την γραμμή src="" σε src="logo-cerruti.png"
+         και διέγραψε το div class="brand-logo-placeholder" -->
+    <div class="brand-item">
+      <img src="logo-cerruti.png" alt="Cerruti 1881" class="brand-logo">
+      <!-- <div class="brand-logo-placeholder">logo cerruti</div> -->
+      <div class="brand-name">Cerruti 1881</div>
+      <div class="brand-type">Italian Elegance · Since 1881</div>
+    </div>
+
+    <!-- ★ BRAND 2: LOCMAN DUCATI
+         Βάλε το logo σε αρχείο: logo-locman.png (ίδιος φάκελος με index.html)
+         Μετά άλλαξε την γραμμή src="" σε src="logo-locman.png"
+         και διέγραψε το div class="brand-logo-placeholder" -->
+    <div class="brand-item">
+      <img src="logo-locman.png" alt="Locman Ducati" class="brand-logo">
+      <!-- <div class="brand-logo-placeholder">logo locman</div> -->
+      <div class="brand-name">Locman Ducati</div>
+      <div class="brand-type">Italian Sport · Precision</div>
+    </div>
+
+    <!-- ★ BRAND 3: CATERPILLAR (CAT)
+         Βάλε το logo σε αρχείο: logo-cat.png (ίδιος φάκελος με index.html)
+         Μετά άλλαξε την γραμμή src="" σε src="logo-cat.png"
+         και διέγραψε το div class="brand-logo-placeholder" -->
+    <div class="brand-item">
+      <img src="logo-cat.png" alt="Caterpillar CAT" class="brand-logo">
+      <!-- <div class="brand-logo-placeholder">logo cat</div> -->
+      <div class="brand-name">Caterpillar</div>
+      <div class="brand-type">Industrial · Robust · CAT</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="experience-bg"></div>
+  <div class="experience-grid">
+    <div class="experience-features reveal">
+      <span class="section-label" data-t="exp_label">Γιατί εμάς</span>
+      <h2 class="section-title" data-t="exp_title">Η <em>Εμπειρία</em><br>Georgallis</h2>
+      <div class="gold-line"></div>
+      <div class="feature"><div class="feature-icon-wrap">✦</div><div><div class="feature-title" data-t="feat1_title">Handcrafted Art</div><p class="feature-desc" data-t="feat1_desc">Every piece is handmade by skilled artisans, preserving the traditions of Greek goldsmithing.</p></div></div>
+      <div class="feature"><div class="feature-icon-wrap">✦</div><div><div class="feature-title" data-t="feat2_title">Quality Guarantee</div><p class="feature-desc" data-t="feat2_desc">Exclusively certified 14 and 18 karat gold jewellery with full authenticity guarantee.</p></div></div>
+      <div class="feature"><div class="feature-icon-wrap">✦</div><div><div class="feature-title" data-t="feat3_title">Personalised Service</div><p class="feature-desc" data-t="feat3_desc">60+ years of experience means we know how to find the perfect piece for every occasion.</p></div></div>
+      <div class="feature"><div class="feature-icon-wrap">✦</div><div><div class="feature-title" data-t="feat4_title">Rhodes Old Town</div><p class="feature-desc" data-t="feat4_desc">Located in the heart of the medieval old town — a unique store in a unique place.</p></div></div>
+      <div class="feature"><div class="feature-icon-wrap">🔧</div><div><div class="feature-title" data-t="feat5_title">Repair Workshop</div><p class="feature-desc" data-t="feat5_desc">We have a fully equipped workshop with professional machinery for jewellery repairs, resizing, cleaning and gold valuation.</p></div></div>
+    </div>
+    <div class="experience-quote reveal">
+      <blockquote class="quote-text" data-t="quote">"Ένα κόσμημα δεν είναι απλώς ένα αντικείμενο — είναι μια μνήμη, μια υπόσχεση, μια ιστορία που κρατά αιώνες."</blockquote>
+      <div class="quote-divider"></div>
+      <div class="quote-author" data-t="quote_author">— The Georgallis Family, since 1965</div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<!-- ══════════════════════════════════════════════════════════
+     GALLERY SECTION — Carousel φωτογραφιών προϊόντων
+     
+     Χαρακτηριστικά:
+     - Filter tabs: All / Gold / Wedding / Baptism / Watches / Silver
+     - 3 φωτογραφίες ταυτόχρονα (desktop), 2 (tablet), 1 (mobile)
+     - Smooth slide animation με cubic-bezier easing
+     - Corner gold accents στο hover
+     - Dots navigation + arrow buttons
+     - Swipe support για κινητά
+     - Bilingual (αλλάζει με τον lang switcher)
+     
+     ΠΩΣ ΝΑ ΠΡΟΣΘΕΣΕΙΣ ΦΩΤΟΓΡΑΦΙΑ:
+     Το carousel χτίζεται αυτόματα από JavaScript.
+     Απλά βάλε τα αρχεία στον ίδιο φάκελο με τα ονόματα:
+     product-01.jpg, product-02.jpg, κλπ.
+     Και αλλάξε το GALLERY_ITEMS array παρακάτω στο <script>.
+     ══════════════════════════════════════════════════════════ -->
+<section id="gallery">
+
+  <!-- HEADER -->
+  <div class="gallery-header reveal">
+    <span class="section-label" data-t="gallery_label">Φωτογραφίες</span>
+    <h2 class="section-title" data-t="gallery_title">Η <em>Συλλογή</em> μας</h2>
+    <div class="gold-line"></div>
+    <p class="gallery-intro" data-t="gallery_intro">Μια ματιά στα κοσμήματα και τα ρολόγια που θα βρείτε στο κατάστημά μας.</p>
+  </div>
+
+  <!-- FILTER TABS -->
+  <!-- Κάθε button φιλτράρει τα items ανά κατηγορία -->
+  <div class="g-filters reveal">
+    <button class="g-filter active" data-cat="all"     data-t="filter_all">Όλα</button>
+    <button class="g-filter"        data-cat="gold"    data-t="filter_gold">Χρυσά</button>
+    <button class="g-filter"        data-cat="wedding" data-t="filter_wedding">Γάμοι</button>
+    <button class="g-filter"        data-cat="baptism" data-t="filter_baptism">Βαπτίσεις</button>
+    <button class="g-filter"        data-cat="watches" data-t="filter_watches">Ρολόγια</button>
+    <button class="g-filter"        data-cat="silver"  data-t="filter_silver">Ασημένια</button>
+  </div>
+
+  <!-- CAROUSEL -->
+  <div class="g-outer reveal">
+    <!-- Αριστερό βέλος -->
+    <button class="g-arrow" id="gPrev" aria-label="Previous">&#8592;</button>
+
+    <!-- Viewport: κρύβει τα items εκτός εμφάνισης με overflow:hidden -->
+    <div class="g-viewport">
+      <!-- Track: αυτό που μετακινείται με transform -->
+      <div class="g-track" id="gTrack"></div>
+    </div>
+
+    <!-- Δεξί βέλος -->
+    <button class="g-arrow" id="gNext" aria-label="Next">&#8594;</button>
+  </div>
+
+  <!-- BOTTOM BAR: counter + dots -->
+  <div class="g-bottom reveal">
+    <div class="g-counter">
+      <span id="gCur">1</span>–<span id="gEnd">3</span>
+      &nbsp;<span style="color:var(--gray)">/</span>&nbsp;
+      <span id="gTot">50</span>
+    </div>
+    <div class="g-dots" id="gDots"></div>
+  </div>
+
+</section>
+
+<!-- CONTACT FORM -->
+<section id="contact">
+  <div class="contact-wrapper">
+    <div class="reveal">
+      <span class="section-label" data-t="contact_label">Επικοινωνία</span>
+      <h2 class="section-title" data-t="contact_title">Στείλτε μας<br><em>Μήνυμα</em></h2>
+      <div class="gold-line"></div>
+      <p style="color:var(--gray);font-size:17px;line-height:1.8;margin-bottom:20px" data-t="contact_intro">Για ερωτήσεις, παραγγελίες ή οτιδήποτε άλλο — είμαστε εδώ.</p>
+      <p style="color:var(--gray);font-size:15px;line-height:1.9">
+        📞 <a href="tel:+302241022090" style="color:var(--gold-light);text-decoration:none">+30 2241 022090</a><br>
+        📱 <a href="tel:+306977249378" style="color:var(--gold-light);text-decoration:none">+30 6977 249378</a><br>
+        💬 <a href="https://wa.me/306977249378" target="_blank" style="color:#25D366;text-decoration:none">WhatsApp</a><br>
+        ✉️ <a href="mailto:georgallisjewellery@gmail.com" style="color:var(--gold-light);text-decoration:none">georgallisjewellery@gmail.com</a>
+      </p>
+    </div>
+    <div class="reveal">
+      <form id="contactForm" onsubmit="submitForm(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label data-t="form_name">Ονοματεπώνυμο</label>
+            <input type="text" id="f_name" name="from_name" required autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label data-t="form_email">Email</label>
+            <input type="email" id="f_email" name="from_email" required autocomplete="email">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label data-t="form_phone">Τηλέφωνο (προαιρετικό)</label>
+            <input type="tel" id="f_phone" name="phone" autocomplete="tel">
+          </div>
+          <div class="form-group">
+            <label data-t="form_subject">Θέμα</label>
+            <select id="f_subject" name="subject" required>
+              <option value="" data-t="form_s0">Επιλέξτε θέμα...</option>
+              <option value="jewellery" data-t="form_s1">Ερώτηση για κόσμημα</option>
+              <option value="order" data-t="form_s2">Παραγγελία / Τιμή</option>
+              <option value="wedding" data-t="form_s3">Βέρες γάμου</option>
+              <option value="baptism" data-t="form_s4">Δώρα βάπτισης</option>
+              <option value="watches" data-t="form_s5">Ρολόγια</option>
+              <option value="repair" data-t="form_s6">Επισκευή κοσμήματος</option>
+              <option value="gold" data-t="form_s7">Εκτίμηση χρυσού</option>
+              <option value="battery" data-t="form_s8">Αλλαγή μπαταρίας ρολογιού</option>
+              <option value="other" data-t="form_s9">Άλλο</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-t="form_message">Μήνυμα</label>
+          <textarea id="f_message" name="message" required></textarea>
+        </div>
+        <button type="submit" class="form-submit" id="submitBtn"><span data-t="form_submit">Send Message</span></button>
+        <div class="form-message" id="formMsg"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- VISIT -->
+<section id="visit">
+  <div class="visit-grid">
+    <div class="reveal">
+      <span class="section-label" data-t="visit_label">Βρείτε μας</span>
+      <h2 class="section-title" data-t="visit_title">Επισκεφθείτε<br><em>το Κατάστημά μας</em></h2>
+      <div class="gold-line"></div>
+      <div class="contact-info">
+        <div class="contact-item">
+          <span class="contact-item-icon">📍</span>
+          <div><span class="contact-item-label" data-t="addr_label">Διεύθυνση</span><div class="contact-item-value" data-t="addr_val">Πρωτογένους 20, Παλιά Πόλη<br>Ρόδος 851 00, Ελλάδα</div></div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">📞</span>
+          <div><span class="contact-item-label" data-t="tel_label">Τηλέφωνο</span><div class="contact-item-value"><a href="tel:+302241022090">+30 2241 022090</a></div></div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">📱</span>
+          <div><span class="contact-item-label" data-t="mobile_label">Κινητό</span><div class="contact-item-value"><a href="tel:+306977249378">+30 6977 249378</a></div></div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">💬</span>
+          <div>
+            <span class="contact-item-label" data-t="whatsapp_label">WhatsApp</span>
+            <div class="contact-item-value">
+              <a href="https://wa.me/306977249378" target="_blank" class="whatsapp-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:8px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Στείλτε μήνυμα στο WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">✉️</span>
+          <div><span class="contact-item-label" data-t="email_label">Email</span><div class="contact-item-value"><a href="mailto:georgallisjewellery@gmail.com">georgallisjewellery@gmail.com</a></div></div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">🕐</span>
+          <div>
+            <span class="contact-item-label" data-t="hours_label">Ωράριο Λειτουργίας</span>
+            <div class="contact-item-value">
+              <div class="hours-grid">
+                <div class="hours-row"><span data-t="h_days">Καθημερινά</span><span data-t="h_open">10:00 – 23:00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="map-container reveal">
+
+      <!-- ══════════════════════════════════════════════════
+           ΧΑΡΤΗΣ — Leaflet.js + OpenStreetMap
+           Εντελώς ΔΩΡΕΑΝ, χωρίς API key, χωρίς λογαριασμό.
+           
+           Η τοποθεσία ορίζεται από τις συντεταγμένες:
+           lat: 36.4449  (γεωγραφικό πλάτος)
+           lng: 28.2270  (γεωγραφικό μήκος)
+           
+           Αν θέλεις να αλλάξεις τοποθεσία:
+           1. Πήγαινε στο openstreetmap.org
+           2. Βρες τη διεύθυνση και κάνε δεξί κλικ → "Show address"
+           3. Αντέγραψε τις συντεταγμένες που εμφανίζονται
+           4. Αντικατέστησε τα νούμερα παρακάτω στο JS
+           ══════════════════════════════════════════════════ -->
+
+      <!-- Το div όπου φορτώνει ο χάρτης -->
+      <div id="leafletMap" style="width:100%;flex:1;min-height:480px;position:relative;z-index:1;filter:grayscale(30%) contrast(1.08) brightness(.9)"></div>
+
+      <!-- Badge με διεύθυνση -->
+      <div class="map-address-badge">
+        <span>📍</span>
+        <div class="map-address-badge-text">
+          <strong>Georgallis Jewellery</strong>
+          Πρωτογένους 20, Παλιά Πόλη Ρόδου
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL -->
+<section id="social">
+  <span class="social-label" data-t="social_label">Ακολουθήστε μας</span>
+  <div class="social-links">
+    <a href="https://www.instagram.com/georgallisjewellery" target="_blank" class="social-link"><span>📸</span> @georgallisjewellery</a>
+    <a href="https://www.facebook.com/georgallisjewellery" target="_blank" class="social-link"><span>👤</span> Georgallis Jewellery</a>
+    <a href="mailto:georgallisjewellery@gmail.com" class="social-link"><span>✉️</span> <span data-t="social_email">Στείλτε email</span></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Georgallis Jewellery</div>
+  <div class="footer-est">Established in Rhodes · 1965</div>
+  <div class="footer-divider"></div>
+  <div class="footer-copy" data-t="footer_copy">Πρωτογένους 20, Παλιά Πόλη Ρόδου &nbsp;·&nbsp; +30 2241 022090<br>© 2025 Georgallis Jewellery. Όλα τα δικαιώματα διατηρούνται.</div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// NAV — Αλλαγή εμφάνισης navbar όταν ο χρήστης κάνει scroll
+// Προσθέτει κλάση "scrolled" που ενεργοποιεί το backdrop blur
+// ══════════════════════════════════════════════════════════
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ══════════════════════════════════════════════════════════
+// MOBILE MENU — Άνοιγμα/κλείσιμο του hamburger menu
+// ══════════════════════════════════════════════════════════
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+const mobileClose = document.getElementById('mobileClose');
+hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+mobileClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+document.querySelectorAll('.mobile-link').forEach(l =>
+  l.addEventListener('click', () => mobileMenu.classList.remove('open'))
+);
+
+// ══════════════════════════════════════════════════════════
+// SCROLL REVEAL — Animation εμφάνισης sections καθώς ο
+// χρήστης κάνει scroll. Χρησιμοποιεί IntersectionObserver
+// για performance (αντί για scroll event listener)
+// ══════════════════════════════════════════════════════════
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      // Μικρό delay για κάθε element ώστε να φαίνονται διαδοχικά
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      revealObserver.unobserve(entry.target); // Σταματά να παρακολουθεί μετά
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ══════════════════════════════════════════════════════════
+// ΑΡΧΙΚΗ ΓΛΩΣΣΑ — Φορτώνει το site στα Ελληνικά
+// Άλλαξε σε setLang('en') αν θες default τα Αγγλικά
+// ══════════════════════════════════════════════════════════
+setLang('el');
+
+// ══════════════════════════════════════════════════════════
+// ΧΑΡΤΗΣ — Leaflet.js + OpenStreetMap (100% δωρεάν)
+//
+// Συντεταγμένες καταστήματος:
+//   lat: 36.4449  → γεωγραφικό πλάτος (βόρεια/νότια)
+//   lng: 28.2270  → γεωγραφικό μήκος  (ανατολικά/δυτικά)
+//
+// Αν θέλεις να αλλάξεις τοποθεσία:
+// 1. Πήγαινε στο openstreetmap.org
+// 2. Βρες τη διεύθυνση → δεξί κλικ → "Show address"
+// 3. Αντέγραψε τις συντεταγμένες και αντικατέστησε εδώ
+// ══════════════════════════════════════════════════════════
+(function initMap() {
+  const mapEl = document.getElementById('leafletMap');
+  if (!mapEl) return;
+
+  // Συντεταγμένες Πρωτογένους 20, Παλιά Πόλη Ρόδου (επιβεβαιωμένες)
+  const LAT = 36.444189;
+  const LNG = 28.227471;
+  const ZOOM = 17;
+
+  // Δημιουργία χάρτη
+  const map = L.map('leafletMap', {
+    center: [LAT, LNG],
+    zoom: ZOOM,
+    scrollWheelZoom: false, // Απενεργοποιεί zoom με scroll (καλύτερο UX)
+    zoomControl: true
+  });
+
+  // Tiles από OpenStreetMap — εντελώς δωρεάν
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Custom χρυσό marker για το κατάστημα
+  const goldIcon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:36px;height:36px;
+      background:#C9A84C;
+      border:2px solid #E8D080;
+      border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      box-shadow:0 4px 20px rgba(201,168,76,0.5);
+    "></div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -40]
+  });
+
+  // Marker με popup
+  L.marker([LAT, LNG], { icon: goldIcon })
+    .addTo(map)
+    .bindPopup(`
+      <div style="font-family:'Cinzel',serif;text-align:center;padding:6px 4px">
+        <strong style="color:#C9A84C;font-size:13px;letter-spacing:.1em">
+          Georgallis Jewellery
+        </strong><br>
+        <span style="font-size:12px;color:#333">
+          Πρωτογένους 20<br>Παλιά Πόλη Ρόδου
+        </span>
+      </div>
+    `, { maxWidth: 200 })
+    .openPopup();
+})();
+
+// ══════════════════════════════════════════════════════════
+// GALLERY CAROUSEL — Elegant slider με filters
+//
+// Δομή δεδομένων: GALLERY_ITEMS array
+// Κάθε item έχει: { cat, num }
+//   cat  = κατηγορία: 'gold' | 'wedding' | 'baptism' | 'watches' | 'silver'
+//   num  = αριθμός αρχείου (product-01.jpg κλπ)
+//   img  = προαιρετικό (αν υπάρχει φωτογραφία)
+//
+// ΓΙΑ ΝΑ ΠΡΟΣΘΕΣΕΙΣ ΦΩΤΟΓΡΑΦΙΑ:
+// 1. Βάλε το αρχείο στον ίδιο φάκελο: product-01.jpg
+// 2. Βρες το item με num:1 παρακάτω
+// 3. Πρόσθεσε: img:'product-01.jpg'
+// ══════════════════════════════════════════════════════════
+const GALLERY_ITEMS = [
+  {cat:'gold',    num:1},  {cat:'gold',    num:2},  {cat:'gold',    num:3},
+  {cat:'gold',    num:4},  {cat:'gold',    num:5},  {cat:'gold',    num:6},
+  {cat:'gold',    num:7},  {cat:'gold',    num:8},  {cat:'gold',    num:9},
+  {cat:'gold',    num:10},
+  {cat:'wedding', num:11}, {cat:'wedding', num:12}, {cat:'wedding', num:13},
+  {cat:'wedding', num:14}, {cat:'wedding', num:15}, {cat:'wedding', num:16},
+  {cat:'wedding', num:17},
+  {cat:'baptism', num:18}, {cat:'baptism', num:19}, {cat:'baptism', num:20},
+  {cat:'baptism', num:21}, {cat:'baptism', num:22}, {cat:'baptism', num:23},
+  {cat:'baptism', num:24},
+  {cat:'watches', num:25}, {cat:'watches', num:26}, {cat:'watches', num:27},
+  {cat:'watches', num:28}, {cat:'watches', num:29}, {cat:'watches', num:30},
+  {cat:'watches', num:31}, {cat:'watches', num:32},
+  {cat:'silver',  num:33}, {cat:'silver',  num:34}, {cat:'silver',  num:35},
+  {cat:'silver',  num:36}, {cat:'silver',  num:37}, {cat:'silver',  num:38},
+  {cat:'gold',    num:39}, {cat:'gold',    num:40}, {cat:'gold',    num:41},
+  {cat:'gold',    num:42},
+  {cat:'watches', num:43}, {cat:'watches', num:44},
+  {cat:'baptism', num:45},
+  {cat:'gold',    num:46}, {cat:'silver',  num:47},
+  {cat:'wedding', num:48}, {cat:'gold',    num:49}, {cat:'watches', num:50}
+];
+
+// Εικονίδια ανά κατηγορία (για το placeholder)
+const CAT_ICON = {gold:'💍', wedding:'💑', baptism:'✝️', watches:'⌚', silver:'🥈'};
+
+// State του carousel
+let gFiltered = [...GALLERY_ITEMS]; // τα items που φαίνονται αυτή τη στιγμή
+let gIndex    = 0;                  // τρέχουσα θέση
+let gPerView  = 3;                  // πόσα φαίνονται ταυτόχρονα
+
+// DOM elements
+const gTrack = document.getElementById('gTrack');
+const gPrev  = document.getElementById('gPrev');
+const gNext  = document.getElementById('gNext');
+const gDots  = document.getElementById('gDots');
+const gCur   = document.getElementById('gCur');
+const gEnd   = document.getElementById('gEnd');
+const gTot   = document.getElementById('gTot');
+
+// Υπολογίζει perView ανάλογα με πλάτος οθόνης
+function gCalcPerView() {
+  gPerView = window.innerWidth <= 640 ? 1 : window.innerWidth <= 1100 ? 2 : 3;
+}
+
+// Χτίζει το HTML των items στο track
+// Αν το item έχει img property → εμφανίζει φωτογραφία
+// Αλλιώς → εμφανίζει placeholder με εικονίδιο
+function gRender() {
+  const t = T[currentLang];
+  gTrack.innerHTML = gFiltered.map(item => {
+    const label = t['cat_' + item.cat] || item.cat;
+    const numStr = String(item.num).padStart(2, '0');
+    const inner = item.img
+      ? `<img src="${item.img}" alt="${label}" loading="lazy">`
+      : `<div class="g-ph">
+           <div class="g-ph-icon">${CAT_ICON[item.cat]}</div>
+           <div class="g-ph-label">product-${numStr}.jpg</div>
+         </div>`;
+    return `
+      <div class="g-item" data-cat="${item.cat}">
+        <div class="g-item-inner">
+          ${inner}
+          <div class="g-overlay"><div class="g-overlay-text">${label}</div></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// Χτίζει τα dots κάτω από το carousel
+function gBuildDots() {
+  if (!gDots) return;
+  const pages = Math.ceil(gFiltered.length / gPerView);
+  gDots.innerHTML = '';
+  for (let i = 0; i < pages; i++) {
+    const d = document.createElement('button');
+    d.className   = 'g-dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('aria-label', 'Page ' + (i + 1));
+    d.addEventListener('click', () => gGoTo(i * gPerView));
+    gDots.appendChild(d);
+  }
+}
+
+// Μετακινεί το carousel στη θέση idx
+function gGoTo(idx) {
+  const max = Math.max(0, gFiltered.length - gPerView);
+  gIndex = Math.max(0, Math.min(idx, max));
+
+  // CSS transform: μετακινεί ανά item-width
+  const pct = gIndex * (100 / gPerView);
+  gTrack.style.transform = `translateX(-${pct}%)`;
+
+  // Ενημέρωση βελών
+  if (gPrev) gPrev.disabled = gIndex === 0;
+  if (gNext) gNext.disabled = gIndex >= max;
+
+  // Ενημέρωση counter
+  if (gCur) gCur.textContent = gIndex + 1;
+  if (gEnd) gEnd.textContent = Math.min(gIndex + gPerView, gFiltered.length);
+  if (gTot) gTot.textContent = gFiltered.length;
+
+  // Ενημέρωση dots
+  const page = Math.floor(gIndex / gPerView);
+  if (gDots) gDots.querySelectorAll('.g-dot').forEach((d, i) =>
+    d.classList.toggle('active', i === page)
+  );
+}
+
+// Εφαρμόζει φίλτρο κατηγορίας
+function gFilter(cat) {
+  // Ενεργοποίηση σωστού button
+  document.querySelectorAll('.g-filter').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === cat)
+  );
+  // Φιλτράρισμα items
+  gFiltered = cat === 'all'
+    ? [...GALLERY_ITEMS]
+    : GALLERY_ITEMS.filter(x => x.cat === cat);
+  gIndex = 0;
+  gCalcPerView();
+  gRender();
+  gBuildDots();
+  gGoTo(0);
+}
+
+// Αρχικοποίηση carousel
+if (gTrack) {
+  gCalcPerView();
+  gRender();
+  gBuildDots();
+  gGoTo(0);
+
+  // Βέλη
+  if (gPrev) gPrev.addEventListener('click', () => gGoTo(gIndex - gPerView));
+  if (gNext) gNext.addEventListener('click', () => gGoTo(gIndex + gPerView));
+
+  // Filter buttons
+  document.querySelectorAll('.g-filter').forEach(btn =>
+    btn.addEventListener('click', () => gFilter(btn.dataset.cat))
+  );
+
+  // Swipe σε κινητό
+  let swipeStartX = 0;
+  gTrack.addEventListener('touchstart', e => swipeStartX = e.touches[0].clientX, { passive: true });
+  gTrack.addEventListener('touchend', e => {
+    const diff = swipeStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? gGoTo(gIndex + gPerView) : gGoTo(gIndex - gPerView);
+    }
+  });
+
+  // Re-render σε resize
+  window.addEventListener('resize', () => { gCalcPerView(); gBuildDots(); gGoTo(0); });
+}
+
+// Κάνει re-render το carousel όταν αλλάζει γλώσσα (για τα labels)
+const _origSetLangForGallery = window.setLang || function(){};
+window.addEventListener('langchange', () => { if(gTrack) gRender(); });
+
+// EmailJS
+// ★ ΑΝΤΙΚΑΤΕΣΤΗΣΕ ΜΕ ΤΑ ΔΙΚΑ ΣΟΥ ΣΤΟΙΧΕΙΑ (οδηγίες παρακάτω)
+const EJS_KEY = 'qU_TawATTQvsM7JiO';
+const EJS_SVC = 'service_g3ih6zy';
+const EJS_TPL = 'template_1qw8q4e';
+
+if(EJS_KEY!=='YOUR_EMAILJS_PUBLIC_KEY'){
+  emailjs.init({publicKey:EJS_KEY});
+}
+
+async function submitForm(e){
+  e.preventDefault();
+  const t=T[currentLang];
+  const btn=document.getElementById('submitBtn');
+  const msg=document.getElementById('formMsg');
+  btn.disabled=true;
+  const btnSpan = btn.querySelector('span') || btn;
+  btnSpan.textContent=t.form_sending;
+  msg.className='form-message';
+
+  const params={
+    from_name:document.getElementById('f_name').value,
+    from_email:document.getElementById('f_email').value,
+    phone:document.getElementById('f_phone').value,
+    subject:document.getElementById('f_subject').value,
+    message:document.getElementById('f_message').value,
+    to_email:'georgallisjewellery@gmail.com'
+  };
+
+  if(EJS_KEY==='YOUR_EMAILJS_PUBLIC_KEY'){
+    setTimeout(()=>{
+      msg.className='form-message success';
+      msg.innerHTML=t.form_success+' <small style="opacity:.55">[demo — configure EmailJS]</small>';
+      btn.disabled=false; (btn.querySelector("span")||btn).textContent=t.form_submit;
+      document.getElementById('contactForm').reset();
+    },900);
+    return;
+  }
+
+  try{
+    await emailjs.send(EJS_SVC,EJS_TPL,params);
+    msg.className='form-message success';
+    msg.innerHTML=t.form_success;
+    document.getElementById('contactForm').reset();
+  }catch(err){
+    msg.className='form-message error';
+    msg.innerHTML=t.form_error;
+  }finally{
+    btn.disabled=false; (btn.querySelector("span")||btn).textContent=t.form_submit;
+  }
+}
+</script>
+</body>
+</html>
